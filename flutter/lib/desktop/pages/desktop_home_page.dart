@@ -80,18 +80,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
-      if (bind.isCustomClient())
-        Align(
-          alignment: Alignment.center,
-          child: loadPowered(context),
-        ),
       Align(
         alignment: Alignment.center,
         child: loadLogo(),
       ),
       buildTip(context),
-      if (!isOutgoingOnly) buildIDBoard(context),
-      if (!isOutgoingOnly) buildPasswordBoard(context),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -145,33 +138,47 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                 Expanded(child: Container())
               ],
             ),
-            if (isOutgoingOnly)
-              Positioned(
-                bottom: 6,
-                left: 12,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: InkWell(
-                    child: Obx(
-                      () => Icon(
-                        Icons.settings,
-                        color: _editHover.value
-                            ? textColor
-                            : Colors.grey.withOpacity(0.5),
-                        size: 22,
-                      ),
+            Positioned(
+              bottom: 6,
+              left: 12,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: InkWell(
+                  child: Obx(
+                    () => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.settings,
+                          color: _editHover.value
+                              ? textColor
+                              : Colors.grey.withOpacity(0.5),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          translate("Settings"),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _editHover.value
+                                ? textColor
+                                : Colors.grey.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
                     ),
-                    onTap: () => {
-                      if (DesktopSettingPage.tabKeys.isNotEmpty)
-                        {
-                          DesktopSettingPage.switch2page(
-                              DesktopSettingPage.tabKeys[0])
-                        }
-                    },
-                    onHover: (value) => _editHover.value = value,
                   ),
+                  onTap: () => {
+                    if (DesktopSettingPage.tabKeys.isNotEmpty)
+                      {
+                        DesktopSettingPage.switch2page(
+                            DesktopSettingPage.tabKeys[0])
+                      }
+                  },
+                  onHover: (value) => _editHover.value = value,
                 ),
-              )
+              ),
+            )
           ],
         ),
       ),

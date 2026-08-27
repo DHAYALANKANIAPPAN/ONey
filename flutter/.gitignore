@@ -54,3 +54,5 @@ flutter_export_environment.sh
 Flutter-Generated.xcconfig
 key.jks
 macos/rustdesk.xcodeproj/project.xcworkspace/
+# Widget Preview related
+.widget_preview/

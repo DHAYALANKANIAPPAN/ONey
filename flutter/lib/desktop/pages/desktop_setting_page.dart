@@ -60,6 +60,7 @@ enum SettingsTabKey {
 
 class DesktopSettingPage extends StatefulWidget {
   final SettingsTabKey initialTabkey;
+  static final RxBool isSettingsUnlocked = false.obs;
   static final List<SettingsTabKey> tabKeys = [
     if (bind.mainGetBuildinOption(key: kOptionHideGeneralSetting) != 'Y')
       SettingsTabKey.general,
@@ -273,31 +274,178 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      body: _buildBlock(
-        children: <Widget>[
-          SizedBox(
-            width: _kTabWidth,
-            child: Column(
-              children: [
-                _header(context),
-                Flexible(child: _listView(tabs: _settingTabs())),
-              ],
-            ),
-          ),
-          const VerticalDivider(width: 1),
-          Expanded(
-            child: Container(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              child: PageView(
-                controller: controller,
-                physics: NeverScrollableScrollPhysics(),
-                children: _children(),
+    return Obx(() {
+      if (isTargetMode() && !DesktopSettingPage.isSettingsUnlocked.value) {
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          body: _buildTargetModeLockdownView(context),
+        );
+      }
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.background,
+        body: _buildBlock(
+          children: <Widget>[
+            SizedBox(
+              width: _kTabWidth,
+              child: Column(
+                children: [
+                  _header(context),
+                  Flexible(child: _listView(tabs: _settingTabs())),
+                ],
               ),
             ),
-          )
-        ],
+            const VerticalDivider(width: 1),
+            Expanded(
+              child: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: PageView(
+                  controller: controller,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: _children(),
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildTargetModeLockdownView(BuildContext context) {
+    final passwordController = TextEditingController();
+    final RxString errorMessage = ''.obs;
+    final RxBool isObscured = true.obs;
+
+    void attemptUnlock() async {
+      final input = passwordController.text.trim();
+      final unlockPin = bind.mainGetUnlockPin();
+      final serverPasswd = gFFI.serverModel.serverPasswd.text;
+
+      bool isAuthorized = false;
+      if (unlockPin.isNotEmpty && input == unlockPin) {
+        isAuthorized = true;
+      } else if (serverPasswd.isNotEmpty && input == serverPasswd) {
+        isAuthorized = true;
+      } else if (unlockPin.isEmpty && serverPasswd.isEmpty) {
+        final superuser = await callMainCheckSuperUserPermission();
+        if (superuser || input.isNotEmpty) {
+          isAuthorized = true;
+        }
+      } else {
+        final superuser = await callMainCheckSuperUserPermission();
+        if (superuser) {
+          isAuthorized = true;
+        }
+      }
+
+      if (isAuthorized) {
+        DesktopSettingPage.isSettingsUnlocked.value = true;
+        showToast(translate('Settings Unlocked'));
+      } else {
+        errorMessage.value = translate('Invalid password or PIN');
+      }
+    }
+
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 460),
+        margin: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.shield_outlined,
+                size: 48,
+                color: Colors.redAccent,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              translate('Target Mode Security Lockdown'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              translate('This system is configured in Target Mode. Settings are locked to prevent unauthorized modifications. Please enter credentials or PIN to access settings.'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Obx(() => TextField(
+              controller: passwordController,
+              obscureText: isObscured.value,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: translate('Password / PIN'),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    isObscured.value ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () => isObscured.value = !isObscured.value,
+                ),
+              ),
+              onSubmitted: (_) => attemptUnlock(),
+            )),
+            Obx(() {
+              if (errorMessage.value.isNotEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    errorMessage.value,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.lock_open, size: 18),
+                    label: Text(translate('Unlock Settings')),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: attemptUnlock,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -321,7 +469,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
                 Navigator.pop(context);
               }
             },
-            icon: Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back),
           ).marginOnly(left: 5),
         if (isWeb)
           SizedBox(
@@ -337,6 +485,17 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
             child: settingsText,
           ).marginOnly(left: 20, top: 10),
         const Spacer(),
+        if (isTargetMode() && DesktopSettingPage.isSettingsUnlocked.value)
+          Tooltip(
+            message: translate('Lock Settings'),
+            child: IconButton(
+              icon: const Icon(Icons.lock, size: 20, color: Colors.orange),
+              onPressed: () {
+                DesktopSettingPage.isSettingsUnlocked.value = false;
+                showToast(translate('Settings Locked'));
+              },
+            ),
+          ).marginOnly(right: 12),
       ],
     );
   }
@@ -1643,6 +1802,326 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
   bool locked = !isWeb && bind.mainIsInstalled();
 
   final scrollController = ScrollController();
+  List<Map<String, dynamic>> _systemsList = [];
+  String _localSystemRole = 'Control';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSystems();
+  }
+
+  void _loadSystems() {
+    _localSystemRole = bind.mainGetLocalOption(key: 'local-system-role');
+    if (_localSystemRole.isEmpty) {
+      _localSystemRole = 'Control';
+    }
+    final raw = bind.mainGetLocalOption(key: 'custom_managed_systems');
+    if (raw.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is List) {
+          _systemsList = List<Map<String, dynamic>>.from(
+              decoded.map((e) => Map<String, dynamic>.from(e)));
+        }
+      } catch (e) {
+        debugPrint('Error parsing managed systems: $e');
+      }
+    }
+  }
+
+  void _saveSystems() async {
+    await bind.mainSetLocalOption(
+        key: 'custom_managed_systems', value: jsonEncode(_systemsList));
+  }
+
+  void _showAddSystemDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final addressController = TextEditingController();
+    final RxString selectedRole = 'Target'.obs;
+    final RxString errorMsg = ''.obs;
+
+    gFFI.dialogManager.show((setState, close, context) {
+      void submit() {
+        final name = nameController.text.trim();
+        final address = addressController.text.trim();
+        if (name.isEmpty || address.isEmpty) {
+          errorMsg.value =
+              translate('Please enter both name and system address/ID');
+          return;
+        }
+        _systemsList.add({
+          'name': name,
+          'address': address,
+          'role': selectedRole.value,
+        });
+        _saveSystems();
+        close();
+        this.setState(() {});
+      }
+
+      return CustomAlertDialog(
+        title: Text(translate('Add System')),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: nameController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: translate('System Name / Alias'),
+                  hintText: 'e.g. Workstation 1, Office PC',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(
+                  labelText: translate('System ID / IP / Host'),
+                  hintText: 'e.g. 123456789 or 192.168.1.100',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                translate('Designate Role:'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Obx(() => Row(
+                    children: [
+                      Expanded(
+                        child: ChoiceChip(
+                          label: Center(
+                              child: Text(translate('Target (Remote Node)'))),
+                          selected: selectedRole.value == 'Target',
+                          selectedColor: Colors.orange.withOpacity(0.25),
+                          onSelected: (val) {
+                            if (val) selectedRole.value = 'Target';
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: Center(
+                              child: Text(
+                                  translate('Control (Admin/Controller)'))),
+                          selected: selectedRole.value == 'Control',
+                          selectedColor: _accentColor.withOpacity(0.25),
+                          onSelected: (val) {
+                            if (val) selectedRole.value = 'Control';
+                          },
+                        ),
+                      ),
+                    ],
+                  )),
+              Obx(() {
+                if (errorMsg.value.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      errorMsg.value,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+            ],
+          ),
+        ),
+        actions: [
+          dialogButton(translate('Cancel'), onPressed: close, isOutline: true),
+          dialogButton(translate('Add'), onPressed: submit),
+        ],
+        onSubmit: submit,
+        onCancel: close,
+      );
+    });
+  }
+
+  Widget addSystems(BuildContext context) {
+    return _Card(
+      title: 'Managed Systems',
+      title_suffix: [
+        ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 16),
+          label: Text(translate('Add System')),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          onPressed: locked ? null : () => _showAddSystemDialog(context),
+        ).marginOnly(right: _kContentHMargin)
+      ],
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(
+              horizontal: _kContentHMargin, vertical: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          translate('Current System Role'),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          translate(
+                              'Designate whether this machine acts as a Target or Control node'),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _localSystemRole == 'Target'
+                              ? Colors.orange.withOpacity(0.15)
+                              : _accentColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _localSystemRole,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _localSystemRole == 'Target'
+                                ? Colors.orange
+                                : _accentColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Switch(
+                        value: _localSystemRole == 'Target',
+                        onChanged: locked
+                            ? null
+                            : (value) async {
+                                final newRole = value ? 'Target' : 'Control';
+                                await bind.mainSetLocalOption(
+                                    key: 'local-system-role', value: newRole);
+                                setState(() {
+                                  _localSystemRole = newRole;
+                                });
+                                showToast(
+                                    translate('System role set to $newRole'));
+                              },
+                      ),
+                    ],
+                  ),
+                ],
+              ).marginSymmetric(vertical: 8),
+              const Divider(),
+              if (_systemsList.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: Text(
+                      translate(
+                          'No systems added yet. Click "Add System" above.'),
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color),
+                    ),
+                  ),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _systemsList.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final item = _systemsList[index];
+                    final isTarget = item['role'] == 'Target';
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        backgroundColor: isTarget
+                            ? Colors.orange.withOpacity(0.2)
+                            : _accentColor.withOpacity(0.2),
+                        child: Icon(
+                          isTarget ? Icons.desktop_windows : Icons.computer,
+                          color: isTarget ? Colors.orange : _accentColor,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(item['name'] ?? 'System',
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(
+                          '${translate("ID / Host")}: ${item['address'] ?? ''}'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isTarget
+                                  ? Colors.orange.withOpacity(0.15)
+                                  : _accentColor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              isTarget ? 'Target' : 'Control',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: isTarget ? Colors.orange : _accentColor,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: translate('Toggle Target / Control role'),
+                            child: Switch(
+                              value: isTarget,
+                              onChanged: locked
+                                  ? null
+                                  : (val) {
+                                      setState(() {
+                                        _systemsList[index]['role'] =
+                                            val ? 'Target' : 'Control';
+                                        _saveSystems();
+                                      });
+                                    },
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 20),
+                            onPressed: locked
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _systemsList.removeAt(index);
+                                      _saveSystems();
+                                    });
+                                  },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1656,6 +2135,7 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
         block: locked,
         child: Column(children: [
           network(context),
+          addSystems(context),
         ]),
       ),
     ]).marginOnly(bottom: _kListViewBottomMargin);
@@ -2424,76 +2904,224 @@ class _AboutState extends State<_About> {
       final buildDate = data['buildDate'].toString();
       final fingerprint = data['fingerprint'].toString();
       final myId = data['myId'].toString();
-      const linkStyle = TextStyle(decoration: TextDecoration.underline);
       final scrollController = ScrollController();
-      return SingleChildScrollView(
-        controller: scrollController,
-        child: _Card(title: translate('About RustDesk'), children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 8.0,
-              ),
-              SelectionArea(
-                  child: Text('${translate('Version')}: $version')
-                      .marginSymmetric(vertical: 4.0)),
-              SelectionArea(
-                  child: Text('${translate('Build Date')}: $buildDate')
-                      .marginSymmetric(vertical: 4.0)),
-              if (!isWeb)
-                SelectionArea(
-                    child: Text('${translate('Fingerprint')}: $fingerprint')
-                        .marginSymmetric(vertical: 4.0)),
-              SelectionArea(
-                  child: Text('${translate('ID')}: $myId')
-                      .marginSymmetric(vertical: 4.0)),
-              InkWell(
-                  onTap: () {
-                    launchUrlString('https://rustdesk.com/privacy.html');
-                  },
-                  child: Text(
-                    translate('Privacy Statement'),
-                    style: linkStyle,
-                  ).marginSymmetric(vertical: 4.0)),
-              InkWell(
-                  onTap: () {
-                    launchUrlString('https://rustdesk.com');
-                  },
-                  child: Text(
-                    translate('Website'),
-                    style: linkStyle,
-                  ).marginSymmetric(vertical: 4.0)),
-              Container(
-                decoration: const BoxDecoration(color: Color(0xFF2c8cff)),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
-                child: SelectionArea(
-                    child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
+      return ChangeNotifierProvider.value(
+        value: gFFI.serverModel,
+        child: Consumer<ServerModel>(
+          builder: (context, model, _) {
+            final showOneTime = model.approveMode != 'click' &&
+                model.verificationMethod != kUsePermanentPassword;
+            final displayId = model.serverId.text.isNotEmpty
+                ? model.serverId.text
+                : myId;
+            return SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                children: [
+                  _Card(
+                    title: 'System',
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ID Row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      translate('Your Desktop ID'),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.color
+                                            ?.withOpacity(0.6),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    GestureDetector(
+                                      onDoubleTap: () {
+                                        Clipboard.setData(
+                                            ClipboardData(text: displayId));
+                                        showToast(translate('Copied'));
+                                      },
+                                      child: Text(
+                                        displayId,
+                                        style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 1.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.copy, size: 20),
+                                  tooltip: translate('Copy ID'),
+                                  onPressed: () {
+                                    Clipboard.setData(
+                                        ClipboardData(text: displayId));
+                                    showToast(translate('Copied'));
+                                  },
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 24),
+                            // Password Row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      translate('One-time Password'),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.color
+                                            ?.withOpacity(0.6),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    GestureDetector(
+                                      onDoubleTap: () {
+                                        if (showOneTime) {
+                                          Clipboard.setData(ClipboardData(
+                                              text: model.serverPasswd.text));
+                                          showToast(translate('Copied'));
+                                        }
+                                      },
+                                      child: Text(
+                                        showOneTime
+                                            ? (model.serverPasswd.text.isNotEmpty
+                                                ? model.serverPasswd.text
+                                                : '******')
+                                            : translate(
+                                                'Permanent Password Active'),
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    if (showOneTime)
+                                      IconButton(
+                                        icon: const Icon(Icons.copy, size: 20),
+                                        tooltip: translate('Copy Password'),
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(
+                                              text: model.serverPasswd.text));
+                                          showToast(translate('Copied'));
+                                        },
+                                      ),
+                                    if (showOneTime)
+                                      AnimatedRotationWidget(
+                                        onPressed: () =>
+                                            bind.mainUpdateTemporaryPassword(),
+                                        child: Tooltip(
+                                          message:
+                                              translate('Refresh Password'),
+                                          child: const RotatedBox(
+                                            quarterTurns: 2,
+                                            child: Icon(
+                                              Icons.refresh,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    if (!bind.isDisableSettings())
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, size: 20),
+                                        tooltip:
+                                            translate('Change Password'),
+                                        onPressed: () => setPasswordDialog(),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 24),
+                            // System Specs
+                            SelectionArea(
+                                child: Text('${translate('Version')}: $version')
+                                    .marginSymmetric(vertical: 2.0)),
+                            SelectionArea(
+                                child:
+                                    Text('${translate('Build Date')}: $buildDate')
+                                        .marginSymmetric(vertical: 2.0)),
+                            if (!isWeb)
+                              SelectionArea(
+                                  child: Text(
+                                          '${translate('Fingerprint')}: $fingerprint')
+                                      .marginSymmetric(vertical: 2.0)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  _Card(
+                    title: 'About LCS',
+                    children: [
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Copyright © ${DateTime.now().toString().substring(0, 4)} Purslane Tech Pte. Ltd.\n$license',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            translate('Slogan_tip'),
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white),
-                          )
+                          const SizedBox(height: 8.0),
+                          SelectionArea(
+                              child: Text('${translate('Version')}: $version')
+                                  .marginSymmetric(vertical: 4.0)),
+                          SelectionArea(
+                              child: Text(
+                                      '${translate('Build Date')}: $buildDate')
+                                  .marginSymmetric(vertical: 4.0)),
+                          Container(
+                            decoration:
+                                const BoxDecoration(color: Color(0xFF2c8cff)),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 20, horizontal: 12),
+                            child: SelectionArea(
+                                child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'LCS Remote Desktop\n$license',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )),
+                          ).marginSymmetric(vertical: 4.0)
                         ],
-                      ),
-                    ),
-                  ],
-                )),
-              ).marginSymmetric(vertical: 4.0)
-            ],
-          ).marginOnly(left: _kContentHMargin)
-        ]),
+                      ).marginOnly(left: _kContentHMargin)
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       );
     });
   }
