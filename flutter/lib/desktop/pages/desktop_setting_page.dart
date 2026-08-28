@@ -3079,7 +3079,7 @@ class _AboutState extends State<_About> {
                     ],
                   ),
                   _Card(
-                    title: 'About LCS',
+                    title: 'About ONey',
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3106,7 +3106,7 @@ class _AboutState extends State<_About> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'LCS Remote Desktop\n$license',
+                                        'ONey Remote Desktop\n$license',
                                         style: const TextStyle(
                                             color: Colors.white),
                                       ),

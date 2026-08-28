@@ -3747,7 +3747,7 @@ Widget loadPowered(BuildContext context) {
   return const SizedBox.shrink();
 }
 
-// LCS branding widgets
+// ONey branding widgets
 Widget loadLogo() {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -3771,7 +3771,7 @@ Widget loadLogo() {
           ),
           alignment: Alignment.center,
           child: const Text(
-            "LCS",
+            "ONey",
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -3782,7 +3782,7 @@ Widget loadLogo() {
         ),
         const SizedBox(width: 10),
         const Text(
-          "LCS",
+          "ONey",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
