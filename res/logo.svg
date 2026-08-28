@@ -1,1 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" rx="64" fill="#1e88e5"/><text x="128" y="148" font-family="Arial" font-size="72" font-weight="bold" fill="white" text-anchor="middle">ONey</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><ellipse cx="128" cy="128" rx="108" ry="48" fill="white" stroke="#1e88e5" stroke-width="16"/><circle cx="128" cy="128" r="32" fill="#1e88e5"/><circle cx="128" cy="128" r="12" fill="#0d47a1"/></svg>
