@@ -277,7 +277,8 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Obx(() {
-      if (isTargetMode() && !DesktopSettingPage.isSettingsUnlocked.value) {
+      final unlocked = DesktopSettingPage.isSettingsUnlocked.value;
+      if (isTargetMode() && !unlocked) {
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.background,
           body: _buildTargetModeLockdownView(context),
