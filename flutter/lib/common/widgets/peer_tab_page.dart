@@ -397,6 +397,7 @@ class _PeerTabPageState extends State<PeerTabPage>
       child: const Icon(Icons.terminal, color: Colors.green),
     );
   }
+
   Widget deleteSelection() {
     final model = Provider.of<PeerTabModel>(context);
     if (model.currentTab == PeerTabIndex.group.index) {
