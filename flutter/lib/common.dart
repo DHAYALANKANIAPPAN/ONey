@@ -3755,63 +3755,15 @@ Widget loadLogo() {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: MyTheme.accent,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: MyTheme.accent.withOpacity(0.3),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: const Text(
-            "ONey",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
+        SvgPicture.asset("assets/icon.svg", width: 32, height: 32),
         const SizedBox(width: 10),
-        const Text(
-          "ONey",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
+        const Text("ONey", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
       ],
     ),
   );
 }
-
 Widget loadIcon(double size) {
-  return Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      color: MyTheme.accent,
-      borderRadius: BorderRadius.circular(size * 0.25),
-    ),
-    alignment: Alignment.center,
-    child: Text(
-      "L",
-      style: TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-        fontSize: size * 0.6,
-      ),
-    ),
-  );
+  return SvgPicture.asset("assets/icon.svg", width: size, height: size);
 }
 
 bool isTargetMode() {

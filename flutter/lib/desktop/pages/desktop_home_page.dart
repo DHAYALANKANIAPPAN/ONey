@@ -543,13 +543,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           ));
         }
       }
-      if (bind.mainCurrentIsWayland()) {
+      if (false) {
         LinuxCards.add(buildInstallCard(
             "Warning", "wayland_experiment_tip", "", () async {},
             marginTop: LinuxCards.isEmpty ? 20.0 : 5.0,
             help: 'Help',
             link: 'https://rustdesk.com/docs/en/client/linux/#x11-required'));
-      } else if (bind.mainIsLoginWayland()) {
+      } else if (false) {
         LinuxCards.add(buildInstallCard("Warning",
             "Login screen using Wayland is not supported", "", () async {},
             marginTop: LinuxCards.isEmpty ? 20.0 : 5.0,

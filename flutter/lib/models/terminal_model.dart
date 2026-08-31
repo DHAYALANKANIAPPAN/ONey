@@ -14,6 +14,8 @@ import 'rustdesk_terminal.dart';
 import 'terminal_mouse_handler.dart';
 
 class TerminalModel with ChangeNotifier {
+  static final List<TerminalModel> allTerminals = [];
+  static bool broadcastMode = true;
   final String id; // peer id
   final FFI parent;
   final int terminalId;
@@ -62,7 +64,15 @@ class TerminalModel with ChangeNotifier {
   /// The listener (typically TerminalPage) can use this to auto-close the tab/page.
   VoidCallback? onClosed;
 
-  Future<void> _handleInput(String data) async {
+  Future<void> _handleInput(String data, {bool skipBroadcast = false}) async {
+    if (broadcastMode && !skipBroadcast) {
+      for (var t in allTerminals) {
+        if (t != this) {
+          t._handleInput(data, skipBroadcast: true);
+        }
+      }
+    }
+
     // xterm can complete asynchronous input after the Flutter page has gone
     // away. Stop before reading or clearing widget-owned modifier state.
     if (_disposed) return;
@@ -137,7 +147,7 @@ class TerminalModel with ChangeNotifier {
     // Setup terminal callbacks
     terminal.onOutput = (data) {
       if (_suppressTerminalOutput) return;
-      _handleInput(data);
+      _handleInput(data, skipBroadcast: false);
     };
 
     terminal.onResize = (w, h, pw, ph) async {
@@ -583,6 +593,7 @@ class TerminalModel with ChangeNotifier {
 
   @override
   void dispose() {
+    allTerminals.remove(this);
     if (_disposed) return;
     _disposed = true;
     terminal.onOutput = null;
