@@ -91,7 +91,7 @@ jobs:
       matrix:
         job:
           - {
-              target: windows-2022,
+              target: windows-2019,
               platform: x64,
             }
           - {
@@ -109,7 +109,6 @@ jobs:
     name: ${{ matrix.job.target }}
     needs: [build-RustDeskTempTopMostWindow, generate-bridge]
     runs-on: ${{ matrix.job.os }}
-    if: contains(matrix.job.os, \'windows\')
     strategy:
       fail-fast: false
       matrix:
@@ -410,7 +409,6 @@ jobs:
   build-for-windows-sciter:
     name: ${{ matrix.job.target }} (${{ matrix.job.os }})
     runs-on: ${{ matrix.job.os }}
-    if: contains(matrix.job.os, \'windows\')
     # Temporarily disable this action due to additional test is needed.
     # if: false
     strategy:
@@ -563,7 +561,6 @@ jobs:
     if: ${{ inputs.upload-artifact }}
     name: build rustdesk ios ipa
     runs-on: ${{ matrix.job.os }}
-    if: contains(matrix.job.os, \'windows\')
     needs: [generate-bridge]
     strategy:
       fail-fast: false
@@ -685,7 +682,6 @@ jobs:
   build-for-macOS:
     name: ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    if: contains(matrix.job.os, \'windows\')
     needs: [generate-bridge]
     strategy:
       fail-fast: false
@@ -950,7 +946,6 @@ jobs:
     needs: [generate-bridge]
     name: build rustdesk android apk ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    if: contains(matrix.job.os, \'windows\')
     strategy:
       fail-fast: false
       matrix:
