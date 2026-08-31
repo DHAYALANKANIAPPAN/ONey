@@ -1,32 +1,6 @@
 name: build RustDeskTempTopMostWindow
 
-on:
-  workflow_call:
-    inputs:
-        upload-artifact:
-          type: boolean
-          default: true
-        target:
-            description: 'Target'
-            required: true
-            type: string
-            default: 'windows-2022'
-        configuration:
-            description: 'Configuration'
-            required: true
-            type: string
-            default: 'Release'
-        platform:
-            description: 'Platform'
-            required: true
-            type: string
-            default: 'x64'
-        target_version:
-            description: 'TargetVersion'
-            required: true
-            type: string
-            default: 'Windows10'
-
+on: workflow_dispatch
 env:
   project_path: WindowInjection/WindowInjection.vcxproj
 

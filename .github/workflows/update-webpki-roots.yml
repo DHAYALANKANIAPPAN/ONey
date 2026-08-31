@@ -10,11 +10,7 @@ name: Update webpki-roots
 # workflows (GitHub limitation). Close and reopen the PR, or push to its
 # branch, to run CI on it.
 
-on:
-  schedule:
-    - cron: "0 3 * * 1"
-  workflow_dispatch:
-
+on: workflow_dispatch
 # A manual dispatch overlapping the weekly run would race it force-pushing
 # the same branch; queue instead of overlapping, and never cancel a run
 # that may have already pushed.

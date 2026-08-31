@@ -1,11 +1,6 @@
 name: playground
 
-on:
-  #schedule:
-    # schedule build every night
-  #  - cron: "0/6 * * * *"
-  workflow_dispatch:
-
+on: workflow_dispatch
 env:
   RUST_VERSION: "1.75" # https://github.com/rustdesk/rustdesk/discussions/7503
   CARGO_NDK_VERSION: "3.1.2"
