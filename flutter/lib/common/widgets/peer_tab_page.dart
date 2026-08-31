@@ -386,6 +386,7 @@ class _PeerTabPageState extends State<PeerTabPage>
   Widget massTerminalSelection() {
     final model = Provider.of<PeerTabModel>(context, listen: false);
     return _hoverAction(
+      context: context,
       toolTip: 'Mass Terminal (Broadcast to all selected)',
       onTap: () async {
         final peers = model.selectedPeers;
