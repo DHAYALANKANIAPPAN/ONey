@@ -7,7 +7,23 @@ env:
   # for multiarch gcc compatibility
   VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  #pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+  #push:
+    branches:
+      - master
+    paths-ignore:
+      - ".github/**"
+      - "docs/**"
+      - "README.md"
+      - "res/**"
+      - "appimage/**"
+      - "flatpak/**"
+
 jobs:
   # ensure_cargo_fmt:
   #   name: Ensure 'cargo fmt' has been run
