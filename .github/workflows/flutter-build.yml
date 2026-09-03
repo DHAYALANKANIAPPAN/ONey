@@ -91,7 +91,7 @@ jobs:
       matrix:
         job:
           - {
-              target: windows-2019,
+              target: windows-latest,
               platform: x64,
             }
 
@@ -110,11 +110,11 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          # - { target: i686-pc-windows-msvc        , os: windows-2019                  }
-          # - { target: x86_64-pc-windows-gnu       , os: windows-2019                  }
+          # - { target: i686-pc-windows-msvc        , os: windows-latest                  }
+          # - { target: x86_64-pc-windows-gnu       , os: windows-latest                  }
           - {
               target: x86_64-pc-windows-msvc,
-              os: windows-2019,
+              os: windows-latest,
               arch: x86_64,
               flutter-arch: x64,
               vcpkg-triplet: x64-windows-static,
@@ -403,15 +403,15 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          # - { target: i686-pc-windows-msvc        , os: windows-2019                  }
-          # - { target: x86_64-pc-windows-gnu       , os: windows-2019                  }
+          # - { target: i686-pc-windows-msvc        , os: windows-latest                  }
+          # - { target: x86_64-pc-windows-gnu       , os: windows-latest                  }
           - {
               target: i686-pc-windows-msvc,
-              os: windows-2019,
+              os: windows-latest,
               arch: x86,
               vcpkg-triplet: x86-windows-static,
             }
-          # - { target: aarch64-pc-windows-msvc, os: windows-2019 }
+          # - { target: aarch64-pc-windows-msvc, os: windows-latest }
     steps:
       - name: Export GitHub Actions cache environment variables
         uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6
