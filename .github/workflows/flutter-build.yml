@@ -66,9 +66,9 @@ jobs:
         with:
           name: bridge-artifact
       - name: Install dependencies
-        run: 'sudo apt update
+        run: 'sudo apt-get update -qq || true
 
-          sudo apt install -y g++-11 libx11-dev libxdo-dev libwayland-dev libxkbcommon-dev
+          sudo apt-get install -yqq g++-11 libx11-dev libxdo-dev libwayland-dev libxkbcommon-dev
           libdrm-dev libgbm-dev libpam0g-dev libxtst-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
           zip g++ gcc git curl wget nasm yasm libgtk-3-dev clang libxcb-randr0-dev
           libxfixes-dev libxcb-shape0-dev libxcb-xfixes0-dev libasound2-dev libpulse-dev
