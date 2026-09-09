@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RustDesk UI Preview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
+    body { background: #1e1e2e; color: #cdd6f4; display: flex; height: 100vh; overflow: hidden; }
+    
+    /* Sidebar */
+    .sidebar { width: 70px; background: #181825; display: flex; flex-direction: column; align-items: center; padding: 20px 0; border-right: 1px solid #313244; }
+    .nav-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; cursor: pointer; color: #a6adc8; transition: 0.2s; }
+    .nav-icon.active, .nav-icon:hover { background: #313244; color: #89b4fa; }
+
+    /* Main Area */
+    .main { flex: 1; display: flex; flex-direction: column; }
+
+    /* Top Collapsible Drawer */
+    .drawer { background: #11111b; border-bottom: 1px solid #313244; transition: max-height 0.3s ease; max-height: 0; overflow: hidden; }
+    .drawer.open { max-height: 120px; }
+    .drawer-content { display: flex; gap: 40px; padding: 18px 24px; align-items: center; }
+    .field label { font-size: 11px; text-transform: uppercase; color: #a6adc8; letter-spacing: 0.5px; }
+    .field .value { font-size: 18px; font-weight: bold; color: #cdd6f4; font-family: monospace; margin-top: 4px; }
+
+    /* Drawer Toggle Bar */
+    .drawer-toggle { background: #181825; padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #313244; font-size: 13px; color: #a6adc8; cursor: pointer; }
+    .arrow { transition: transform 0.3s; }
+    .arrow.open { transform: rotate(180deg); }
+
+    /* Content Area */
+    .content { flex: 1; padding: 24px; overflow-y: auto; }
+    .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #a6adc8; margin: 16px 0 12px 0; display: flex; align-items: center; gap: 8px; }
+    .section-title:first-child { margin-top: 0; }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+    .card { background: #181825; border: 1px solid #313244; border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 6px; }
+    .card:hover { border-color: #585b70; background: #1e1e2e; }
+    .card.selected { border-color: #89b4fa; background: #24273a; outline: 2px solid #89b4fa; }
+
+    .card-top { display: flex; justify-content: space-between; align-items: center; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #a6e3a1; }
+    .card-title { font-size: 14px; font-weight: 600; color: #cdd6f4; }
+    .card-id { font-size: 12px; font-family: monospace; color: #6c7086; }
+
+    /* Selection Counter Bar */
+    .action-bar { background: #181825; border-top: 1px solid #313244; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .btn { background: #89b4fa; color: #11111b; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="nav-icon active" title="Connections">🖥️</div>
+    <div class="nav-icon" title="File Transfer">📁</div>
+    <div class="nav-icon" title="Settings">⚙️</div>
+  </div>
+
+  <div class="main">
+    <!-- Collapsible OTP Drawer -->
+    <div class="drawer" id="otpDrawer">
+      <div class="drawer-content">
+        <div class="field">
+          <label>Your Device ID</label>
+          <div class="value">934 281 052</div>
+        </div>
+        <div class="field">
+          <label>One-Time Password (OTP)</label>
+          <div class="value">k9#Px7!m</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Toggle Header -->
+    <div class="drawer-toggle" onclick="toggleDrawer()">
+      <span>Connection Info (ID & Password)</span>
+      <span class="arrow" id="drawerArrow">▼</span>
+    </div>
+
+    <!-- Main List grouped by OS -->
+    <div class="content">
+      <div class="section-title">🪟 Windows Machines</div>
+      <div class="grid">
+        <div class="card" data-id="101" onclick="handleCardClick(event, this)">
+          <div class="card-top">
+            <span class="card-title">WIN-LAB-01</span>
+            <span class="status-dot"></span>
+          </div>
+          <span class="card-id">ID: 104 291 882</span>
+        </div>
+        <div class="card" data-id="102" onclick="handleCardClick(event, this)">
+          <div class="card-top">
+            <span class="card-title">WIN-DEV-CLIENT</span>
+            <span class="status-dot"></span>
+          </div>
+          <span class="card-id">ID: 882 104 931</span>
+        </div>
+      </div>
+
+      <div class="section-title">🐧 Linux Machines</div>
+      <div class="grid">
+        <div class="card" data-id="201" onclick="handleCardClick(event, this)">
+          <div class="card-top">
+            <span class="card-title">UBUNTU-NODE-A</span>
+            <span class="status-dot"></span>
+          </div>
+          <span class="card-id">ID: 449 201 118</span>
+        </div>
+        <div class="card" data-id="202" onclick="handleCardClick(event, this)">
+          <div class="card-top">
+            <span class="card-title">KALI-ENDPOINT</span>
+            <span class="status-dot"></span>
+          </div>
+          <span class="card-id">ID: 994 310 402</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-selection indicator -->
+    <div class="action-bar">
+      <span id="selectCount">Tip: Hold <b>Ctrl</b> and click cards to multi-select</span>
+      <button class="btn" id="terminalBtn" style="display: none;" onclick="alertSelected()">Open Selected in Terminal</button>
+    </div>
+  </div>
+
+  <script>
+    let isDrawerOpen = false;
+    const selectedIds = new Set();
+
+    function toggleDrawer() {
+      isDrawerOpen = !isDrawerOpen;
+      document.getElementById('otpDrawer').classList.toggle('open', isDrawerOpen);
+      document.getElementById('drawerArrow').classList.toggle('open', isDrawerOpen);
+    }
+
+    function handleCardClick(e, el) {
+      const id = el.getAttribute('data-id');
+      if (e.ctrlKey || e.metaKey) {
+        if (selectedIds.has(id)) {
+          selectedIds.delete(id);
+          el.classList.remove('selected');
+        } else {
+          selectedIds.add(id);
+          el.classList.add('selected');
+        }
+      } else {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+        selectedIds.clear();
+        selectedIds.add(id);
+        el.classList.add('selected');
+      }
+      updateActionBar();
+    }
+
+    function updateActionBar() {
+      const count = selectedIds.size;
+      const countLabel = document.getElementById('selectCount');
+      const termBtn = document.getElementById('terminalBtn');
+
+      if (count > 0) {
+        countLabel.innerHTML = `Selected <b>${count}</b> machine(s)`;
+        termBtn.style.display = 'block';
+      } else {
+        countLabel.innerHTML = `Tip: Hold <b>Ctrl</b> and click cards to multi-select`;
+        termBtn.style.display = 'none';
+      }
+    }
+
+    function alertSelected() {
+      alert(`Opening terminal for machine IDs: ${Array.from(selectedIds).join(', ')}`);
+    }
+  </script>
+</body>
+</html>

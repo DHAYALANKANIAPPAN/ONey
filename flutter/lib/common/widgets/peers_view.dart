@@ -260,23 +260,50 @@ class _PeersViewState extends State<_PeersView>
                   : Container(child: visibilityChild);
             }
 
+            List<dynamic> groupedItems = [];
+            Map<String, List<Peer>> grouped = {};
+            for (var p in peers) {
+              String os = p.platform.isNotEmpty ? p.platform : 'Unknown';
+              grouped.putIfAbsent(os, () => []).add(p);
+            }
+            var keys = grouped.keys.toList();
+            keys.sort();
+            for (var key in keys) {
+              groupedItems.add(key);
+              groupedItems.addAll(grouped[key]!);
+            }
+
             // We should avoid too many rebuilds. Win10(Some machines) on Flutter 3.19.6.
             // Continious rebuilds of `ListView.builder` will cause memory leak.
             // Simple demo can reproduce this issue.
             final Widget child = Obx(() => stateGlobal.isPortrait.isTrue
                 ? ListView.builder(
-                    itemCount: peers.length,
+                    itemCount: groupedItems.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return buildOnePeer(peers[index], true).marginOnly(
+                      var item = groupedItems[index];
+                      if (item is String) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          child: Text(item, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                        );
+                      }
+                      return buildOnePeer(item, true).marginOnly(
                           top: index == 0 ? 0 : space / 2, bottom: space / 2);
                     },
                   )
                 : peerCardUiType.value == PeerUiType.list
                     ? ListView.builder(
                         controller: _scrollController,
-                        itemCount: peers.length,
+                        itemCount: groupedItems.length,
                         itemBuilder: (BuildContext context, int index) {
-                          return buildOnePeer(peers[index], false).marginOnly(
+                          var item = groupedItems[index];
+                          if (item is String) {
+                            return Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                              child: Text(item, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                            );
+                          }
+                          return buildOnePeer(item, false).marginOnly(
                               right: space,
                               top: index == 0 ? 0 : space / 2,
                               bottom: space / 2);
@@ -286,9 +313,17 @@ class _PeersViewState extends State<_PeersView>
                         gridDelegate: SliverGridDelegateWithWrapping(
                             mainAxisSpacing: space / 2,
                             crossAxisSpacing: space),
-                        itemCount: peers.length,
+                        itemCount: groupedItems.length,
                         itemBuilder: (BuildContext context, int index) {
-                          return buildOnePeer(peers[index], false);
+                          var item = groupedItems[index];
+                          if (item is String) {
+                            return Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                              child: Text(item, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                            );
+                          }
+                          return buildOnePeer(item, false);
                         }));
 
             if (updateEvent == UpdateEvent.load) {

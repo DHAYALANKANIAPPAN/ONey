@@ -66,6 +66,12 @@ class _PeerCardState extends State<_PeerCard>
             ? null
             : () => widget.connect(context, peer.id),
         onTap: () {
+          bool isCtrlDown = HardwareKeyboard.instance.isControlPressed ||
+              HardwareKeyboard.instance.isMetaPressed;
+          if (isCtrlDown && !peerTabModel.multiSelectionMode) {
+            peerTabModel.setMultiSelectionMode(true);
+          }
+          
           if (peerTabModel.multiSelectionMode) {
             peerTabModel.select(peer);
           } else {
@@ -76,7 +82,12 @@ class _PeerCardState extends State<_PeerCard>
             }
           }
         },
-        onLongPress: () => peerTabModel.select(peer),
+        onLongPress: () {
+            if (!peerTabModel.multiSelectionMode) {
+                peerTabModel.setMultiSelectionMode(true);
+            }
+            peerTabModel.select(peer);
+        },
         child: child);
   }
 

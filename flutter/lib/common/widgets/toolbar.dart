@@ -481,7 +481,7 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
     );
   }
   // note
-  if (isDefaultConn && !bind.isDisableAccount()) {
+  if (false) {
     v.add(
       TTextMenu(
           child: Text(translate('Note')),

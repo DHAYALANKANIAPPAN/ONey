@@ -712,11 +712,7 @@ Future<bool?> loginDialog() {
 }
 
 Future<bool?> _openLoginDialogOnce() async {
-  try {
-    return await _openLoginDialog();
-  } finally {
-    _activeLoginDialog = null;
-  }
+  return true;
 }
 
 Future<bool?> _openLoginDialog() async {

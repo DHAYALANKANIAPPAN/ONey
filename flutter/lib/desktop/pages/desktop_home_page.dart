@@ -49,6 +49,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   var watchIsCanRecordAudio = false;
   Timer? _updateTimer;
   bool isCardClosed = false;
+  bool isIdDrawerOpen = false;
 
   final RxBool _editHover = false.obs;
   final RxBool _block = false.obs;
@@ -85,8 +86,39 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         child: loadLogo(),
       ),
       buildTip(context),
-      if (!isOutgoingOnly) buildIDBoard(context),
-      if (!isOutgoingOnly) buildPasswordBoard(context),
+      if (!isOutgoingOnly)
+        Column(
+          children: [
+            InkWell(
+              onTap: () {
+                setState(() {
+                  isIdDrawerOpen = !isIdDrawerOpen;
+                });
+              },
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(translate("Connection Info"), style: TextStyle(fontWeight: FontWeight.bold)),
+                    Icon(isIdDrawerOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down)
+                  ]
+                )
+              )
+            ),
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity, height: 0),
+              secondChild: Column(
+                children: [
+                  buildIDBoard(context),
+                  buildPasswordBoard(context),
+                ]
+              ),
+              crossFadeState: isIdDrawerOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
+            )
+          ]
+        ),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),

@@ -714,7 +714,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
     final settings = SettingsList(
       sections: [
         customClientSection,
-        if (!bind.isDisableAccount())
+        if (false)
           SettingsSection(
             title: Text(translate('Account')),
             tiles: [
@@ -859,7 +859,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
               showThemeSettings(gFFI.dialogManager);
             },
           ),
-          if (!bind.isDisableAccount())
+          if (false)
             SettingsTile.switchTile(
               title: Text(translate('note-at-conn-end-tip')),
               initialValue: _allowAskForNoteAtEndOfConnection,

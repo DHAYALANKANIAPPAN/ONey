@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/models/peer_model.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../common.dart';
@@ -41,8 +42,8 @@ class PeerTabModel with ChangeNotifier {
     true,
     true,
     !isWeb && bind.mainGetLocalOption(key: "disable-discovery-panel") != "Y",
-    !(bind.isDisableAb() || bind.isDisableAccount()),
-    !(bind.isDisableGroupPanel() || bind.isDisableAccount()),
+    false,
+    false,
   ]);
   final List<bool> _isVisible = List.filled(maxTabCount, true, growable: false);
   List<bool> get isVisibleEnabled => () {
@@ -152,7 +153,7 @@ class PeerTabModel with ChangeNotifier {
       // https://github.com/flutter/flutter/issues/101275#issuecomment-1604541700
       // After onTap, the shift key should be pressed for a while when not in multiselection mode,
       // because onTap is delayed when onDoubleTap is not null
-      if (isDesktop || isWebDesktop) return;
+      if ((isDesktop || isWebDesktop) && !HardwareKeyboard.instance.isControlPressed) return;
       _multiSelectionMode = true;
     }
     final cached = _currentTabCachedPeers.map((e) => e.id).toList();

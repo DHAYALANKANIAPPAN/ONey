@@ -120,7 +120,7 @@ class _PeerTabPageState extends State<PeerTabPage>
                   children: [
                     Expanded(
                         child: visibleContextMenuListener(
-                            _createSwitchBar(context))),
+                            const SizedBox.shrink())),
                     if (stateGlobal.isPortrait.isTrue)
                       ..._portraitRightActions(context)
                     else
