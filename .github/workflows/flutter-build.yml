@@ -65,6 +65,15 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: bridge-artifact
+      - name: Install dependencies
+        run: 'sudo apt-get update -qq || true
+
+          sudo apt-get install -yqq clang cmake ninja-build pkg-config libgtk-3-dev
+          liblzma-dev libxdo-dev libx11-dev libwayland-dev libxkbcommon-dev libdrm-dev
+          libgbm-dev libpam0g-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+          libappindicator3-dev
+
+          '
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
