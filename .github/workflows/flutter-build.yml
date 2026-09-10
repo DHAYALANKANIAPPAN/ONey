@@ -104,9 +104,9 @@ jobs:
           pushd vcpkg
           git reset --hard ${{ env.VCPKG_COMMIT_ID }}
           ./bootstrap-vcpkg.sh -disableMetrics
-          ./vcpkg install --triplet x64-linux --x-install-root="$VCPKG_ROOT/installed"
           popd
           popd
+          $VCPKG_ROOT/vcpkg install --triplet x64-linux --x-install-root="$VCPKG_ROOT/installed"
 
       - name: Build
         run: |
