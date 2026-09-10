@@ -55,7 +55,7 @@ jobs:
   generate-bridge:
     uses: ./.github/workflows/bridge.yml
   build-for-linux-flutter:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     needs:
       - generate-bridge
     steps:
