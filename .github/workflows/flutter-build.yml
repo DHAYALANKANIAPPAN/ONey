@@ -96,6 +96,7 @@ jobs:
 
       - name: Setup VCPKG
         run: |
+          echo "VCPKG_ROOT=/opt/artifacts/vcpkg" >> $GITHUB_ENV
           export VCPKG_ROOT=/opt/artifacts/vcpkg
           sudo mkdir -p /opt/artifacts
           sudo chown -R $USER:$USER /opt/artifacts
@@ -110,8 +111,8 @@ jobs:
 
       - name: Build
         run: |
-          export VCPKG_ROOT=/opt/artifacts/vcpkg
-          python3 ./build.py --flutter
+          cargo build --locked --lib --features flutter,hwcodec --release
+          python3 ./build.py --flutter --hwcodec --skip-cargo
       - name: Upload Artifact
         if: env.UPLOAD_ARTIFACT == 'true'
         uses: actions/upload-artifact@v4
