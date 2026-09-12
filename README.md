@@ -1,33 +1,4 @@
 
-
-> [!Caution]
-> **Misuse Disclaimer:** <br>
-> The developers of ONey do not condone or support any unethical or illegal use of this software. Misuse, such as unauthorized access, control or invasion of privacy, is strictly against our guidelines. The authors are not responsible for any misuse of the application.
-
-
-Chat with us: [Discord](https://discord.gg/nDceKgxnkV) | [Twitter](https://twitter.com/ONey) | [Reddit](https://www.reddit.com/r/ONey) | [YouTube](https://www.youtube.com/@ONey)
-
-[![ONey Server Pro](https://img.shields.io/badge/ONey%20Server%20Pro-Advanced%20Features-blue)](https://ONey.com/pricing.html)
-
-Yet another remote desktop solution, written in Rust. Works out of the box with no configuration required. You have full control of your data, with no concerns about security. You can use our rendezvous/relay server, [set up your own](https://ONey.com/server), or [write your own rendezvous/relay server](https://github.com/ONey/ONey-server-demo).
-
-![image](https://user-images.githubusercontent.com/71636191/171661982-430285f0-2e12-4b1d-9957-4a58e375304d.png)
-
-ONey welcomes contribution from everyone. See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for help getting started.
-
-[**FAQ**](https://github.com/ONey/ONey/wiki/FAQ)
-
-[**BINARY DOWNLOAD**](https://github.com/ONey/ONey/releases)
-
-[**NIGHTLY BUILD**](https://github.com/ONey/ONey/releases/tag/nightly)
-
-[<img src="https://f-droid.org/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/en/packages/com.carriez.flutter_hbb)
-[<img src="https://flathub.org/api/badge?svg&locale=en"
-    alt="Get it on Flathub"
-    height="80">](https://flathub.org/apps/com.ONey.ONey)
-
 ## Dependencies
 
 Desktop versions use Flutter or Sciter (deprecated) for GUI. This tutorial is for Sciter only, since it is easier and more friendly to start. Check out our [CI](https://github.com/ONey/ONey/blob/master/.github/workflows/flutter-build.yml) for building the Flutter version.
